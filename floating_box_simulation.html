@@ -361,6 +361,11 @@
 				let c_2 = get('c_2', params);
 				let K_3 = get('K_3', params);
 
+				if (current_graph != 0) {
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = 'c_1 + ' exp(' + (-t/ K_3) + ') + ' + (params.g * K_3) + 't + ' + c_2 });
+					current_graph = 0;
+				}
+
 				return c_1 * Math.exp(-t / K_3) + params.g * K_3 * t + c_2;
 
 			} else if (x < 0 && params.b == 0) {
@@ -694,12 +699,12 @@
 
 		}
 
-	</script>
+// ---------------------------------- DESMOS -------------------------
 
-	<script>
+		var current_graph = -1;
+
 		var elt = document.getElementById('calculator');
 		var calculator = Desmos.GraphingCalculator(elt);
-		calculator.setExpression({ id: 'graph1', latex: 'y=x^2' });
 	</script>
 </body>
 </html>
