@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser.min.js"></script>
+	<script src="https://www.desmos.com/api/v1.4/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.1/css/bulma.min.css">
+	<style>
+		.label {
+			width: 150px;
+		}
+	</style>
+</head>
+<body>
+<section class="section">
+	<div class="container">
+		<div class="columns">
+			<div class="column is-one-fifth" style="background:#79b3e8;">
+				<div id="phaser-simulation"></div>
+			</div>
+			<div class="column" style="padding-bottom:0;">
+				<div class="box">
+					<div class="columns">
+						<div class="column">
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Width/Depth/Height</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="W">
+										</div>
+									</div>
+									<div class="field">
+										<div class="control">				
+											<input class="input" type="text" id="D">
+										</div>
+									</div>
+									<div class="field">
+										<div class="control">				
+											<input class="input" type="text" id="H">
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Water Density (rho)</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="rho">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Grav. Accel. (g)</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="g">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Mass (M)</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="M">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Init. Position (x_0)</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="x_0">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Init. Velocity (dx_0)</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="dx_0">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<div class="button is-success" onclick="update_simulation()">
+												Update Simulation
+											</div>
+											<div class="button is-warning" onclick="pause_play_simulation()" id="pause_play_button">
+												Pause Simulation
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<div class="column">
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Leakage Speed (L)</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="L">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Drag (b)</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="b">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Water Level</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="water_level">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Pixels/Meter</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="pixels_per_meter">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Precision</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="precision">
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="field is-horizontal">
+								<div class="field-label is-normal">
+									<label class="label">Slowmotion</label>
+								</div>
+								<div class="field-body">
+									<div class="field">
+										<div class="control">
+											<input class="input" type="text" id="slowmotion">
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+
+					</div>
+
+				</div>
+				<div id="calculator" style="width: 1000; height: 450px;"></div>
+			</div>
+		</div>
+	</div>
+</section>
+
+	<script>
+		// ------------------------- Settings -------------------------
+		var water_level = 400;
+		var pixels_per_meter = 100;
+		var precision = 100;
+		var slowmotion = 1;
+
+		var init_params = {
+			W: 1,
+			D: 1,
+			H: 1,
+			rho: 1025,
+			g: 9.8,
+			M: 41,
+			x_0: 0.3,
+			dx_0: 0,
+			L: 0,
+			b: 0
+		}
+
+
+		// ------------------------- Math ----------------------------
+		function get_mass(t, params) {
+			return params.M + 1e-3 * params.L * params.rho * t;
+		}
+
+		dependencies =	{
+			'Disc': ['b', 'W', 'D', 'M', 'g', 'rho'],
+			'K_1': ['L', 'W', 'D'],
+			'K_2': ['W', 'D', 'M', 'rho', 'b', 'L', 'g'],
+			'd_1': ['W', 'D', 'M', 'rho', 'b', 'L', 'g', 'x_0'],
+			'd_2': ['W', 'D', 'M', 'rho', 'b', 'L', 'g', 'x_0', 'dx_0'],
+			'K_3': ['M', 'b'],
+			'c_1': ['M', 'b', 'g', 'dx_0'],
+			'c_2': ['M', 'b', 'g', 'dx_0', 'x_0'],
+			'K_4': ['M', 'b'],
+			'K_5': ['M', 'b', 'W', 'D', 'g', 'H', 'rho', 'L'],
+			'K_6': ['g', 'L', 'rho', 'b'],
+			'e_1': ['M', 'b', 'W', 'D', 'g', 'H', 'rho', 'L', 'dx_0'],
+			'e_2': ['M', 'b', 'W', 'D', 'g', 'H', 'rho', 'L', 'dx_0', 'x_0'],
+			'K_7': ['L', 'g', 'rho', 'M'],
+			'K_8': ['g', 'W', 'D', 'H', 'rho', 'M']
+		};
+
+		last_params = {};
+		last_values = {};
+		Object.keys(dependencies).forEach(function(key) {
+			last_params_values = {};
+			dependencies[key].forEach(function(k) {
+				last_params_values[k] = -1;
+			});
+			last_params[key] = last_params_values;
+			last_values[key] = -1;
+		});
+
+		function get(key, params) {
+			let p = null;
+			for (let i = 0; i < dependencies[key].length; i++) {
+				p = dependencies[key][i];
+				if (last_params[key][p] !== params[p]) {
+					new_value = compute(key, params);
+					last_values[key] = new_value;
+
+					return new_value;
+				}
+			}
+
+			return last_values[key];
+		}
+		
+		function compute(key, params) {
+			
+			if (key == 'Disc') {
+				
+				return Math.sqrt(-Math.pow(params.b, 2) + 4 * params.W * params.D * params.M * params.g * params.rho);
+			
+			} else if (key == 'K_1') {
+
+				return params.L / (1000 * params.W * params.D);
+
+			} else if (key == 'K_2') {
+
+				return params.M / (params.W * params.D * params.rho) - params.b * params.L / (1000 * Math.pow(params.W * params.D, 2) * params.g * params.rho);
+
+			} else if (key == 'd_1') {
+
+				return params.x_0 - get('K_2', params);
+
+			} else if (key == 'd_2') {
+
+				return ( 2 * params.M * (params.dx_0 - get('K_1', params)) + get('d_1', params) * params.b ) / get('Disc', params)
+
+			} else if (key == 'K_3') {
+
+				return params.M / params.b;
+
+			} else if (key == 'c_1') {
+	
+				return get('K_3', params) * (params.g * get('K_3', params) - params.dx_0);
+
+			} else if (key == 'c_2') {
+
+				return params.x_0 - get('c_1', params);
+
+			} else if (key == 'K_4') {
+
+				return params.M / params.b;
+
+			} else if (key == 'K_5') {
+
+				return get('K_4', params) * params.g - (params.W * params.D * params.g * params.H * params.rho / params.b) - params.g * params.L * params.rho / (1000 * Math.pow(params.b, 2))
+
+			} else if (key == 'K_6') { 
+
+				return params.g * params.L * params.rho / (2000 * params.b);
+
+			} else if (key == 'e_1') {
+
+				return get('K_4', params) * (get('K_5', params) - params.dx_0);
+
+			} else if (key == 'e_2') {
+
+				return params.x_0 - get('e_1', params);
+
+			} else if (key == 'K_7') {
+
+				return params.L * params.g * params.rho / (6000 * params.M);
+
+			} else if (key == 'K_8') {
+
+				return 0.5 * params.g * (1 - params.W * params.D * params.H * params.rho / params.M);
+
+			}
+
+		}
+		
+		function get_position(x, t, params) {
+
+			if (x < 0 && params.b != 0) {
+
+				let c_1 = get('c_1', params);
+				let c_2 = get('c_2', params);
+				let K_3 = get('K_3', params);
+
+				return c_1 * Math.exp(-t / K_3) + params.g * K_3 * t + c_2;
+
+			} else if (x < 0 && params.b == 0) {
+				
+				return 0.5 * params.g * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
+
+			} else if (x <= params.H) {
+				
+				//let K_2 = get('K_2', params);
+				//let d_1 = get('d_1', params);
+				//let d_2 = get('d_2', params);
+				//let Disc = get('Disc', params);
+				//let K_1 = get('K_1', params);
+				//let bM = -0.5 * params.b / params.M;
+				//let DiscM = 0.5 * Disc / params.M;
+
+				//return d_1 * Math.exp(bM * t) * Math.cos(DiscM * t) + d_2 * Math.exp(bM * t) * Math.sin(DiscM * t) + K_1 * t + K_2;  
+
+				let m = params.M + 0.001 * params.L * params.rho * t;
+				let Arho = params.W * params.D * params.rho;
+				let Disc = Math.sqrt((4 * params.g * Arho - Math.pow(params.b, 2) / m ) / m) / 2;
+				let bm = -0.5 * params.b / m;
+				let K_2 = params.M / Arho;
+				let d_1 = params.x_0 - K_2;
+				let K_1 = 0.001 * params.L / (params.W * params.D);
+				let d_2 = ( params.dx_0 + (0.5 * d_1 * params.b / params.M) - K_1 ) / Disc;
+
+				return Math.exp(bm * t) * ( d_1 * Math.cos(Disc * t) + d_2 * Math.sin(Disc * t) ) + K_1 * t + K_2;
+
+			} else if (params.b != 0) {
+
+				let K_4 = get('K_4', params);
+				let K_5 = get('K_5', params);
+				let K_6 = get('K_6', params);
+				let e_1 = get('e_1', params);
+				let e_2 = get('e_2', params);
+				
+				return e_1 * Math.exp(-t / K_4) + K_6 * Math.pow(t, 2) + K_5 * t + e_2;
+
+
+			} else if (params.L != 0) {
+
+				//let K_7 = get('K_7', params);
+				//let K_8 = get('K_8', params);
+
+				//return K_7 * Math.pow(t, 3) + K_8 * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
+
+				let MLgt = params.M + 0.001 * params.L * params.g * t;
+				let HArhoL2g = params.H * params.W * params.D * params.rho / (Math.pow(L, 2) * params.g);
+				let lnM = Math.log(params.M);
+				let lnMLgt = Math.log(MLgt);
+				let d_1 = params.dx_0 + 1000 * params.H * params.W * params.D * params.rho * lnM / params.L;
+				let d_2 = params.x_0 - 1e6 * HArhoL2g * params.M * (1 - lnM);
+
+				return 0.5 * params.g * Math.pow(t, 2) + 1e6 * HArhoL2g * MLgt * (1 - lnMLgt) + d_1 * t + d_2;
+
+			} else {
+
+				let K = params.g - params.W * params.D * params.rho * params.g / params.M;
+
+				return 0.5 * K * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
+
+			}
+
+		}
+		
+		function get_velocity(x, t, params) {
+
+			if (x < 0 && params.b != 0) {
+
+				let c_1 = get('c_1', params);
+				let K_3 = get('K_3', params);
+
+				return -c_1 * Math.exp(-t / K_3) / K_3 + params.g * K_3;
+
+			} else if (x < 0 && params.b == 0) {
+
+				return params.g * t + params.dx_0;
+
+			} else if (x <= params.H) {
+				
+				//let K_2 = get('K_2', params);
+				//let Disc = get('Disc', params);
+				//let d_1 = get('d_1', params);
+				//let d_2 = get('d_2', params);
+				//let K_1 = get('K_1', params);
+				//let bM = -0.5 * params.b / params.M;
+				//let DiscM = 0.5 * Disc / params.M;
+
+				//return ( Math.exp(bM * t) * ( ( d_2 * Disc - d_1 * params.b ) * Math.cos(DiscM * t) - ( d_2 * params.b + d_1 * Disc ) * Math.sin(DiscM * t) ) ) / (2 * params.M) + K_1;
+
+				let m = params.M + 0.001 * params.L * params.rho * t;
+				let Arho = params.W * params.D * params.rho;
+				let Disc = Math.sqrt((4 * params.g * Arho - Math.pow(params.b, 2) / m ) / m) / 2;
+				let bm = -0.5 * params.b / m;
+				let K_2 = params.M / Arho;
+				let d_1 = params.x_0 - K_2;
+				let K_1 = 0.001 * params.L / (params.W * params.D);
+				let d_2 = ( params.dx_0 + (0.5 * d_1 * params.b / params.M) - K_1 ) / Disc;
+				let Z = 0.5 * (params.b * m - 0.001 * params.b * params.L * params.rho * t) / Math.pow(m, 2);
+
+				return Math.exp(bm * t) * ( ( d_2 * Disc - d_1 * Z ) * Math.cos(Disc * t) - ( d_2 * Z + Disc * d_1 ) * Math.sin(Disc * t)  ) + K_1;
+
+
+			} else if (params.b != 0) {
+
+				let K_4 = get('K_4', params);
+				let K_5 = get('K_5', params);
+				let K_6 = get('K_6', params);
+				let e_1 = get('e_1', params);
+				
+				return -e_1 * Math.exp(-t / K_4) / K_4 + 2 * K_6 * t + K_5;
+
+			} else if (params.L != 0) {
+
+				//let K_7 = get('K_7', params);
+				//let K_8 = get('K_8', params);
+
+				//return 3 * K_7 * Math.pow(t, 2) + 2 * K_8 * t + params.dx_0;
+
+				let HArhoL = params.H * params.W * params.D * params.rho / params.L;
+				let lnMLgt = Math.log(params.M + 0.001 * params.L * params.g * t);
+				let d_1 = params.dx_0 + 1000 * HArhoL * Math.log(params.M);
+
+				return params.g * t - 1000 * HArhoL * lnMLgt + d_1;
+
+			} else {
+
+				let K = params.g - params.W * params.D * params.rho * params.g / params.M;
+
+				return K * t + params.dx_0;
+
+			}
+
+		}
+
+		// ------------------------ Controls ----------------------------
+
+		var inputs = {
+			'W': document.getElementById('W'),
+			'D': document.getElementById('D'),
+			'H': document.getElementById('H'),
+			'rho': document.getElementById('rho'),
+			'g': document.getElementById('g'),
+			'M': document.getElementById('M'),
+			'x_0': document.getElementById('x_0'),
+			'dx_0': document.getElementById('dx_0'),
+			'L': document.getElementById('L'),
+			'b': document.getElementById('b')
+		};
+		
+		water_level_input = document.getElementById('water_level');
+		pixels_per_meter_input = document.getElementById('pixels_per_meter');
+		precision_input = document.getElementById('precision');
+		slowmotion_input = document.getElementById('slowmotion');
+
+		var pause_play_button = document.getElementById('pause_play_button');
+
+		future_params = Object.assign({}, init_params);
+	
+		setInterval(function() {
+			
+			Object.keys(inputs).forEach(function (key) {
+				inputs[key].placeholder = future_params[key];
+			});
+
+			water_level_input.placeholder = water_level;
+			pixels_per_meter_input.placeholder = pixels_per_meter;
+			precision_input.placeholder = precision;
+			slowmotion_input.placeholder = slowmotion;
+
+		
+		}, 1000);
+
+		function update_simulation() {
+			Object.keys(inputs).forEach(function(key) {
+				new_value = parseFloat(inputs[key].value);
+
+				if (!isNaN(new_value)) {
+					future_params[key] = new_value;
+				}
+
+				inputs[key].value = '';
+			});
+
+			if (!isNaN(parseFloat(water_level_input.value))) {
+				water_level = parseFloat(water_level_input.value);
+				water_level_input.value = '';
+			}
+
+			if (!isNaN(parseFloat(pixels_per_meter_input.value))) {
+				pixels_per_meter = parseFloat(pixels_per_meter_input.value);
+				pixels_per_meter_input.value = '';
+			}
+	
+			if (!isNaN(parseFloat(precision_input.value))) {
+				precision = parseFloat(precision_input.value);
+				precision_input.value = '';
+			}
+
+			if (!isNaN(parseFloat(slowmotion_input.value))) {
+				slowmotion = parseFloat(slowmotion_input.value);
+				slowmotion_input.value = '';
+			}
+
+			if (simulation !== null) {
+				run_simulation();
+			}
+
+			//calculator.setExpression({id: 'graph1', latex: 'y=x^' + x_0});
+		}
+		
+		function pause_play_simulation() {
+			if (simulation !== null) {
+				clearInterval(simulation);
+				simulation = null;
+
+				pause_play_button.classList.remove('is-warning');
+				pause_play_button.classList.add('is-info');
+				pause_play_button.innerHTML = 'Resume Simulation';
+			} else {
+				run_simulation();
+
+				pause_play_button.classList.remove('is-info');
+				pause_play_button.classList.add('is-warning');
+				pause_play_button.innerHTML = 'Pause Simulation';
+			}
+		}
+
+
+		// ------------------------- Phaser Stuff -------------------------
+		var config = {
+			width: 250,
+			height: 900,
+			type: Phaser.AUTO,
+			parent: 'phaser-simulation',
+			scene: {
+				create: create
+			}
+		};
+
+		var game = new Phaser.Game(config);
+    var rect = null;
+		var water = null;
+
+		var graphics = null;
+		var graphics_water = null;
+		
+				
+		var params = null;
+		var simulation = null;
+		
+		function create() {
+			let sky = new Phaser.Geom.Rectangle(0, 0, 250, 900);
+			water = new Phaser.Geom.Rectangle(0, water_level, 250, 900 - water_level);
+			rect = new Phaser.Geom.Rectangle(125 - 0.5*init_params.W*pixels_per_meter,                      // x
+													 						 water_level + init_params.x_0*init_params.H*pixels_per_meter,  // y
+																			 init_params.W*pixels_per_meter, 															  // width
+													 						 init_params.H*pixels_per_meter);																// height
+
+			let graphics_sky = this.add.graphics({fillStyle: {color: 0xe6f4f7}});
+			graphics_water = this.add.graphics({fillStyle: {color: 0xa4caed}});
+
+			graphics_sky.fillRectShape(sky);
+			graphics_water.fillRectShape(water);
+
+			graphics = this.add.graphics({ fillStyle: { color: 0x777777} });
+
+			run_simulation();
+		}
+	
+		function run_simulation() {
+			if (simulation !== null) {
+				clearInterval(simulation);
+			}
+
+			params = Object.assign({}, future_params);
+
+			var iter = 0;
+			simulation = setInterval(function() {
+				graphics.clear();
+
+				t = iter/(slowmotion*precision);
+				
+				current_x = (rect.y + rect.height - water_level)/pixels_per_meter;
+
+				new_x = get_position(current_x, t, params);
+
+				future_params.dx_0 = get_velocity(future_params.x_0, t, params);
+				future_params.x_0 = new_x;
+				future_params.M = get_mass(t, params);
+
+
+				inputs['x_0'].placeholder = future_params.x_0;
+				inputs['dx_0'].placeholder = future_params.dx_0;
+
+				if ( (current_x < 0 && new_x > 0) || (current_x > 0 && new_x < 0) || 
+						 (current_x <= params.H && new_x > params.H) || (current_x > params.H && new_x < params.H)) {
+					params.dx_0 = future_params.dx_0;
+					params.x_0 = future_params.x_0;
+					params.M = future_params.M;
+					iter = 0;
+				}
+
+				rect.y = water_level + pixels_per_meter*new_x - rect.height;
+
+				if (params.W*pixels_per_meter != rect.width) {
+					rect.width = params.W * pixels_per_meter;
+					rect.x = 125 - 0.5 * rect.width;
+				}
+				
+				if (params.H*pixels_per_meter != rect.height) {
+					height_diff = params.H * pixels_per_meter - rect.height;
+					rect.height = params.H * pixels_per_meter;
+					rect.y = rect.y - height_diff;
+				}
+
+				if (water_level != water.y) {
+					water.y = water_level;
+					water.height = 900 - water_level;
+					graphics_water.clear();
+					graphics_water.fillRectShape(water);
+					console.log('done');
+				}
+
+				graphics.fillRectShape(rect);
+
+				iter += 1;
+
+			}, 1000/precision);
+
+		}
+
+	</script>
+
+	<script>
+		var elt = document.getElementById('calculator');
+		var calculator = Desmos.GraphingCalculator(elt);
+		calculator.setExpression({ id: 'graph1', latex: 'y=x^2' });
+	</script>
+</body>
+</html>
