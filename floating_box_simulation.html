@@ -362,7 +362,7 @@
 				let K_3 = get('K_3', params);
 
 				if (current_graph != 0) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = 'c_1 + ' exp(' + (-t/ K_3) + ') + ' + (params.g * K_3) + 't + ' + c_2 });
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + c_1 + ' exp(' + (-t/ K_3) + ') + ' + (params.g * K_3) + 't + ' + c_2 });
 					current_graph = 0;
 				}
 
