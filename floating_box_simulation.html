@@ -361,29 +361,24 @@
 				let c_2 = get('c_2', params);
 				let K_3 = get('K_3', params);
 
-				if (current_graph != 0) {
+				if (current_graph !== 0) {
 					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + c_1 + ' exp(' + (-t/ K_3) + ') + ' + (params.g * K_3) + 't + ' + c_2 });
 					current_graph = 0;
 				}
 
-				return c_1 * Math.exp(-t / K_3) + params.g * K_3 * t + c_2;
+				position = c_1 * Math.exp(-t / K_3) + params.g * K_3 * t + c_2;
 
 			} else if (x < 0 && params.b == 0) {
+
+				if (current_graph !== 1) {
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * params.g) + ' t^2 + ' + params.dx_0 + 't + ' + params.x_0 });
+					current_graph = 1;
+				}
 				
-				return 0.5 * params.g * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
+				position = 0.5 * params.g * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
 
 			} else if (x <= params.H) {
 				
-				//let K_2 = get('K_2', params);
-				//let d_1 = get('d_1', params);
-				//let d_2 = get('d_2', params);
-				//let Disc = get('Disc', params);
-				//let K_1 = get('K_1', params);
-				//let bM = -0.5 * params.b / params.M;
-				//let DiscM = 0.5 * Disc / params.M;
-
-				//return d_1 * Math.exp(bM * t) * Math.cos(DiscM * t) + d_2 * Math.exp(bM * t) * Math.sin(DiscM * t) + K_1 * t + K_2;  
-
 				let m = params.M + 0.001 * params.L * params.rho * t;
 				let Arho = params.W * params.D * params.rho;
 				let Disc = Math.sqrt((4 * params.g * Arho - Math.pow(params.b, 2) / m ) / m) / 2;
@@ -393,25 +388,28 @@
 				let K_1 = 0.001 * params.L / (params.W * params.D);
 				let d_2 = ( params.dx_0 + (0.5 * d_1 * params.b / params.M) - K_1 ) / Disc;
 
-				return Math.exp(bm * t) * ( d_1 * Math.cos(Disc * t) + d_2 * Math.sin(Disc * t) ) + K_1 * t + K_2;
+				if (current_graph !== 2) {
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = e^{' + (bm * t) + '}(' + d_1 + ' \\cos(' + Disc + 't) + ' + d_2 + ' \\sin(' + Disc + 't) ) + ' + K_1 + 't + ' + K_2 });
+					current_graph = 2;
+				}
+
+				position = Math.exp(bm * t) * ( d_1 * Math.cos(Disc * t) + d_2 * Math.sin(Disc * t) ) + K_1 * t + K_2;
 
 			} else if (params.b != 0) {
 
-				let K_4 = get('K_4', params);
-				let K_5 = get('K_5', params);
+				let K_4 = get('K_4', params); let K_5 = get('K_5', params);
 				let K_6 = get('K_6', params);
 				let e_1 = get('e_1', params);
 				let e_2 = get('e_2', params);
 				
-				return e_1 * Math.exp(-t / K_4) + K_6 * Math.pow(t, 2) + K_5 * t + e_2;
+				if (current_graph !== 3) {
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + e_1 + ' exp(-t/' + K_4 + ') + ' + K_6 + 't^2 + ' + K_5 + 't + ' + e_2 });
+					current_graph = 3;
+				}
 
+				position = e_1 * Math.exp(-t / K_4) + K_6 * Math.pow(t, 2) + K_5 * t + e_2;
 
 			} else if (params.L != 0) {
-
-				//let K_7 = get('K_7', params);
-				//let K_8 = get('K_8', params);
-
-				//return K_7 * Math.pow(t, 3) + K_8 * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
 
 				let MLgt = params.M + 0.001 * params.L * params.g * t;
 				let HArhoL2g = params.H * params.W * params.D * params.rho / (Math.pow(L, 2) * params.g);
@@ -420,15 +418,29 @@
 				let d_1 = params.dx_0 + 1000 * params.H * params.W * params.D * params.rho * lnM / params.L;
 				let d_2 = params.x_0 - 1e6 * HArhoL2g * params.M * (1 - lnM);
 
-				return 0.5 * params.g * Math.pow(t, 2) + 1e6 * HArhoL2g * MLgt * (1 - lnMLgt) + d_1 * t + d_2;
+				if (current_graph !== 4) {
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * params.g) + 't^2 + ' + (1e6 * HArhoL2g * MLgt * (1 - lnMLgt)) + ' + ' + d_1 + 't + ' + d_2  });
+					current_graph = 4;
+				}
+
+				position = 0.5 * params.g * Math.pow(t, 2) + 1e6 * HArhoL2g * MLgt * (1 - lnMLgt) + d_1 * t + d_2;
 
 			} else {
 
 				let K = params.g - params.W * params.D * params.rho * params.g / params.M;
 
-				return 0.5 * K * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
+				if (current_graph !== 4) {
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * K) + 't^2 + ' + params.dx_0 + 't + ' + params.x_0  });
+					current_graph = 4;
+				}
+
+				position = 0.5 * K * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
 
 			}
+
+			calculator.setExpression({id: 'graph2', 'latex': '(' + t + ', ' + position + ')'});
+			
+			return position;
 
 		}
 		
