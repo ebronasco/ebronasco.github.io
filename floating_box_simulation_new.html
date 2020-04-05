@@ -362,7 +362,7 @@
 				let K_3 = get('K_3', params);
 
 				if (current_graph !== 0) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + c_1 + ' exp(' + (-t/ K_3) + ') + ' + (params.g * K_3) + 't + ' + c_2 });
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + c_1 + ' e^{' + (-t/ K_3) + '} + ' + (params.g * K_3) + 't + ' + c_2 });
 					current_graph = 0;
 				}
 
@@ -397,17 +397,20 @@
 
 			} else if (params.b != 0) {
 
-				let K_4 = get('K_4', params); let K_5 = get('K_5', params);
+				let K_4 = get('K_4', params); 
+				let K_5 = get('K_5', params);
 				let K_6 = get('K_6', params);
 				let e_1 = get('e_1', params);
 				let e_2 = get('e_2', params);
+				let m = params.M + 0.001 * params.L * params.rho * t;
+				let bm = -params.b / m;
 				
 				if (current_graph !== 3) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + e_1 + ' exp(-t/' + K_4 + ') + ' + K_6 + 't^2 + ' + K_5 + 't + ' + e_2 });
+														 calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + e_1 + ' e^{' + (-params.b) + 't / (' + params.M + ' + ' +(0.001 * params.L * params.rho) + 't)} + ' + K_6 + 't^2 + ' + K_5 + 't + ' + e_2 });
 					current_graph = 3;
 				}
 
-				position = e_1 * Math.exp(-t / K_4) + K_6 * Math.pow(t, 2) + K_5 * t + e_2;
+				position = e_1 * Math.exp(bm * t) + K_6 * Math.pow(t, 2) + K_5 * t + e_2;
 
 			} else if (params.L != 0) {
 
@@ -488,8 +491,11 @@
 				let K_5 = get('K_5', params);
 				let K_6 = get('K_6', params);
 				let e_1 = get('e_1', params);
-				
-				return -e_1 * Math.exp(-t / K_4) / K_4 + 2 * K_6 * t + K_5;
+				let m = params.M + 0.001 * params.L * params.rho * t;
+				let bm = -params.b / m;
+				let Z = (params.b * m - 0.001 * params.b * params.L * params.rho * t) / Math.pow(m, 2);
+
+				return -Z * Math.exp(bm * t) / K_4 + 2 * K_6 * t + K_5;
 
 			} else if (params.L != 0) {
 
