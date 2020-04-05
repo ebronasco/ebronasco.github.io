@@ -429,9 +429,9 @@
 
 				let K = params.g - params.W * params.D * params.rho * params.g / params.M;
 
-				if (current_graph !== 4) {
+				if (current_graph !== 5) {
 					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * K) + 't^2 + ' + params.dx_0 + 't + ' + params.x_0  });
-					current_graph = 4;
+					current_graph = 5;
 				}
 
 				position = 0.5 * K * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
