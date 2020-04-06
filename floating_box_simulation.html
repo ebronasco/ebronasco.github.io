@@ -135,7 +135,7 @@
 								<div class="field-body">
 									<div class="field">
 										<div class="control">
-											<input class="input" type="text" id="L" disabled>
+											<input class="input" type="text" id="L">
 										</div>
 									</div>
 								</div>
@@ -148,7 +148,7 @@
 								<div class="field-body">
 									<div class="field">
 										<div class="control">
-											<input class="input" type="text" id="b" disabled>
+											<input class="input" type="text" id="b">
 										</div>
 									</div>
 								</div>
@@ -230,11 +230,11 @@
 			H: 1,
 			rho: 1025,
 			g: 9.8,
-			M: 41,
-			x_0: 0.3,
+			M: 500,
+			x_0: 2,
 			dx_0: 0,
-			L: 0,
-			b: 0
+			L: 10,
+			b: 1
 		}
 
 
@@ -327,7 +327,7 @@
 
 			} else if (key == 'K_5') {
 
-				return get('K_4', params) * params.g - (params.W * params.D * params.g * params.H * params.rho / params.b) - params.g * params.L * params.rho / (1000 * Math.pow(params.b, 2))
+				return get('K_4', params) * params.g - (params.W * params.D * params.g * params.H * params.rho / params.b) - params.g * params.L * params.rho / (1000 * Math.pow(params.b, 2));
 
 			} else if (key == 'K_6') { 
 
@@ -362,7 +362,7 @@
 				let K_3 = get('K_3', params);
 
 				if (current_graph !== 0) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + c_1 + ' e^{' + (-t/ K_3) + '} + ' + (params.g * K_3) + 't + ' + c_2 });
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + c_1 + ' e^{-t' + (1/ K_3) + '} + ' + (params.g * K_3) + 't + ' + c_2 });
 					current_graph = 0;
 				}
 
@@ -395,7 +395,7 @@
 
 				position = Math.exp(bm * t) * ( d_1 * Math.cos(Disc * t) + d_2 * Math.sin(Disc * t) ) + K_1 * t + K_2;
 
-			} else if (params.b != 0) {
+			} else if (params.b != 0 && params.L == 0) {
 
 				let K_4 = get('K_4', params); 
 				let K_5 = get('K_5', params);
@@ -406,7 +406,7 @@
 				let bm = -params.b / m;
 				
 				if (current_graph !== 3) {
-														 calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + e_1 + ' e^{' + (-params.b) + 't / (' + params.M + ' + ' +(0.001 * params.L * params.rho) + 't)} + ' + K_6 + 't^2 + ' + K_5 + 't + ' + e_2 });
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + e_1 + ' e^{' + (-params.b) + 't / (' + params.M + ' + ' +(0.001 * params.L * params.rho) + 't)} + ' + K_6 + 't^2 + ' + K_5 + 't + ' + e_2 });
 					current_graph = 3;
 				}
 
@@ -415,14 +415,14 @@
 			} else if (params.L != 0) {
 
 				let MLgt = params.M + 0.001 * params.L * params.g * t;
-				let HArhoL2g = params.H * params.W * params.D * params.rho / (Math.pow(L, 2) * params.g);
+				let HArhoL2g = params.H * params.W * params.D * params.rho / (Math.pow(params.L, 2) * params.g);
 				let lnM = Math.log(params.M);
 				let lnMLgt = Math.log(MLgt);
 				let d_1 = params.dx_0 + 1000 * params.H * params.W * params.D * params.rho * lnM / params.L;
 				let d_2 = params.x_0 - 1e6 * HArhoL2g * params.M * (1 - lnM);
 
 				if (current_graph !== 4) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * params.g) + 't^2 + ' + (1e6 * HArhoL2g * MLgt * (1 - lnMLgt)) + ' + ' + d_1 + 't + ' + d_2  });
+					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * params.g) + 't^2 + ' + (1e6 * HArhoL2g) + '(' + params.M +  ' + ' + (0.001*params.L*params.g) + 't) (1 - \\ln(' + params.M +  ' + ' + (0.001*params.L*params.g) + 't)) + ' + d_1 + 't + ' + d_2  });
 					current_graph = 4;
 				}
 
@@ -485,7 +485,7 @@
 				return Math.exp(bm * t) * ( ( d_2 * Disc - d_1 * Z ) * Math.cos(Disc * t) - ( d_2 * Z + Disc * d_1 ) * Math.sin(Disc * t)  ) + K_1;
 
 
-			} else if (params.b != 0) {
+			} else if (params.b != 0 && params.L == 0) {
 
 				let K_4 = get('K_4', params);
 				let K_5 = get('K_5', params);
@@ -493,9 +493,9 @@
 				let e_1 = get('e_1', params);
 				let m = params.M + 0.001 * params.L * params.rho * t;
 				let bm = -params.b / m;
-				let Z = (params.b * m - 0.001 * params.b * params.L * params.rho * t) / Math.pow(m, 2);
+				let Z = (0.001 * params.b * params.L * params.rho * t - params.b * m) / Math.pow(m, 2);
 
-				return -Z * Math.exp(bm * t) / K_4 + 2 * K_6 * t + K_5;
+				return Z * e_1 * Math.exp(bm * t) + 2 * K_6 * t + K_5
 
 			} else if (params.L != 0) {
 
@@ -600,6 +600,7 @@
 			if (simulation !== null) {
 				clearInterval(simulation);
 				simulation = null;
+				current_graph = -1;
 
 				pause_play_button.classList.remove('is-warning');
 				pause_play_button.classList.add('is-info');
@@ -674,8 +675,9 @@
 
 				future_params.dx_0 = get_velocity(future_params.x_0, t, params);
 				future_params.x_0 = new_x;
-				future_params.M = get_mass(t, params);
-
+				if (current_x >= 0) {
+					future_params.M = get_mass(t, params);
+				}
 
 				inputs['x_0'].placeholder = future_params.x_0;
 				inputs['dx_0'].placeholder = future_params.dx_0;
@@ -706,7 +708,6 @@
 					water.height = 900 - water_level;
 					graphics_water.clear();
 					graphics_water.fillRectShape(water);
-					console.log('done');
 				}
 
 				graphics.fillRectShape(rect);
