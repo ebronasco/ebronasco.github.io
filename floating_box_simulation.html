@@ -219,22 +219,21 @@
 
 	<script>
 		// ------------------------- Settings -------------------------
-		var water_level = 400;
-		var pixels_per_meter = 100;
-		var precision = 100;
-		var slowmotion = 1;
-
 		var init_params = {
 			W: 1,
 			D: 1,
 			H: 1,
 			rho: 1025,
 			g: 9.8,
-			M: 500,
-			x_0: 2,
+			M: 41,
+			x_0: 0.8,
 			dx_0: 0,
-			L: 10,
-			b: 1
+			L: 0,
+			b: 0,
+			water_level: 400,
+			pixels_per_meter: 100,
+			precision: 100,
+			slowmotion: 1
 		}
 
 
@@ -244,11 +243,13 @@
 		}
 
 		dependencies =	{
-			'Disc': ['b', 'W', 'D', 'M', 'g', 'rho'],
+			'Lrho' : ['L', 'rho'],
+			'Arho' : ['W', 'D', 'rho'],
+			'gArho': ['g', 'W', 'D', 'rho'],
+			'K_2': ['M', 'W', 'D', 'rho'],
+			'd_1': ['x_0', 'M', 'W', 'D', 'rho'],
 			'K_1': ['L', 'W', 'D'],
-			'K_2': ['W', 'D', 'M', 'rho', 'b', 'L', 'g'],
-			'd_1': ['W', 'D', 'M', 'rho', 'b', 'L', 'g', 'x_0'],
-			'd_2': ['W', 'D', 'M', 'rho', 'b', 'L', 'g', 'x_0', 'dx_0'],
+			'd_2': ['dx_0', 'x_0', 'M', 'W', 'D', 'rho', 'b', 'L'],
 			'K_3': ['M', 'b'],
 			'c_1': ['M', 'b', 'g', 'dx_0'],
 			'c_2': ['M', 'b', 'g', 'dx_0', 'x_0'],
@@ -257,8 +258,6 @@
 			'K_6': ['g', 'L', 'rho', 'b'],
 			'e_1': ['M', 'b', 'W', 'D', 'g', 'H', 'rho', 'L', 'dx_0'],
 			'e_2': ['M', 'b', 'W', 'D', 'g', 'H', 'rho', 'L', 'dx_0', 'x_0'],
-			'K_7': ['L', 'g', 'rho', 'M'],
-			'K_8': ['g', 'W', 'D', 'H', 'rho', 'M']
 		};
 
 		last_params = {};
@@ -286,28 +285,36 @@
 
 			return last_values[key];
 		}
-		
+
 		function compute(key, params) {
 			
-			if (key == 'Disc') {
-				
-				return Math.sqrt(-Math.pow(params.b, 2) + 4 * params.W * params.D * params.M * params.g * params.rho);
-			
-			} else if (key == 'K_1') {
+			if (key == 'Lrho') {
 
-				return params.L / (1000 * params.W * params.D);
+				return 0.001 * params.L * params.rho;
+
+			} else if (key == 'Arho') {
+
+				return params.W * params.D * params.rho;
+
+			} else if (key == 'gArho') {
+
+				return 4 * params.g * get('Arho', params);
 
 			} else if (key == 'K_2') {
 
-				return params.M / (params.W * params.D * params.rho) - params.b * params.L / (1000 * Math.pow(params.W * params.D, 2) * params.g * params.rho);
+				return params.M / get('Arho', params);
 
 			} else if (key == 'd_1') {
 
 				return params.x_0 - get('K_2', params);
 
+			} else if (key == 'K_1') {
+
+				return 0.001 * params.L / (params.W * params.D);
+
 			} else if (key == 'd_2') {
 
-				return ( 2 * params.M * (params.dx_0 - get('K_1', params)) + get('d_1', params) * params.b ) / get('Disc', params)
+				return ( params.dx_0 + (0.5 * get('d_1', params) * params.b / params.M) - get('K_1', params) );
 
 			} else if (key == 'K_3') {
 
@@ -341,19 +348,13 @@
 
 				return params.x_0 - get('e_1', params);
 
-			} else if (key == 'K_7') {
-
-				return params.L * params.g * params.rho / (6000 * params.M);
-
-			} else if (key == 'K_8') {
-
-				return 0.5 * params.g * (1 - params.W * params.D * params.H * params.rho / params.M);
-
-			}
+			}	
 
 		}
 		
 		function get_position(x, t, params) {
+
+			let graph = false;
 
 			if (x < 0 && params.b != 0) {
 
@@ -361,39 +362,37 @@
 				let c_2 = get('c_2', params);
 				let K_3 = get('K_3', params);
 
-				if (current_graph !== 0) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + c_1 + ' e^{-t' + (1/ K_3) + '} + ' + (params.g * K_3) + 't + ' + c_2 });
-					current_graph = 0;
-				}
+				graph = 'y(t) = ' + c_1 + ' e^{-t' + (1/ K_3) + '} + ' + (params.g * K_3) + 't + ' + c_2;
 
 				position = c_1 * Math.exp(-t / K_3) + params.g * K_3 * t + c_2;
 
 			} else if (x < 0 && params.b == 0) {
 
-				if (current_graph !== 1) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * params.g) + ' t^2 + ' + params.dx_0 + 't + ' + params.x_0 });
-					current_graph = 1;
-				}
+				graph  = 'y(t) = ' + (0.5 * params.g) + ' t^2 + ' + params.dx_0 + 't + ' + params.x_0;
 				
 				position = 0.5 * params.g * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
 
 			} else if (x <= params.H) {
 				
-				let m = params.M + 0.001 * params.L * params.rho * t;
-				let Arho = params.W * params.D * params.rho;
-				let Disc = Math.sqrt((4 * params.g * Arho - Math.pow(params.b, 2) / m ) / m) / 2;
+				let Lrho = get('Lrho', params);
+				let Arho = get('Arho', params);
+				let gArho = get('gArho', params);
+				let K_2 = get('K_2', params);
+				let d_1 = get('d_1', params);
+				let K_1 = get('K_1', params);
+				let d_2 = get('d_2', params);
+														  
+				let m = params.M + Lrho * t;
+				let Discm = Math.sqrt((gArho - Math.pow(params.b, 2) / m ) / m) / 2;
 				let bm = -0.5 * params.b / m;
-				let K_2 = params.M / Arho;
-				let d_1 = params.x_0 - K_2;
-				let K_1 = 0.001 * params.L / (params.W * params.D);
-				let d_2 = ( params.dx_0 + (0.5 * d_1 * params.b / params.M) - K_1 ) / Disc;
+				let d_2Discm = d_2 / Discm;
 
-				if (current_graph !== 2) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = e^{' + (bm * t) + '}(' + d_1 + ' \\cos(' + Disc + 't) + ' + d_2 + ' \\sin(' + Disc + 't) ) + ' + K_1 + 't + ' + K_2 });
-					current_graph = 2;
-				}
+				let m_latex = params.M + ' + ' + (0.001 * params.L * params.rho) + 't';
+				let Disc_latex = '\\sqrt{4 \\cdot ' + (params.g * Arho) + ' \\cdot (' + m_latex +  ') - ' + Math.pow(params.b, 2) + '} / (2(' + m_latex + '))';
+				let d_2_latex = ( params.dx_0 + (0.5 * d_1 * params.b / params.M) - K_1 ) + ' / (' + Disc_latex + ')';
+				graph = 'y(t) = e^{-' + params.b + 't / (2(' + m_latex + '))}(' + d_1 + ' \\cos(t \\cdot ' + Disc_latex + ') + ' + d_2_latex + ' \\sin(t \\cdot ' + Disc_latex + ') ) + ' + K_1 + 't + ' + K_2;
 
-				position = Math.exp(bm * t) * ( d_1 * Math.cos(Disc * t) + d_2 * Math.sin(Disc * t) ) + K_1 * t + K_2;
+				position = Math.exp(bm * t) * ( d_1 * Math.cos(Discm * t) + d_2Discm * Math.sin(Discm * t) ) + K_1 * t + K_2;
 
 			} else if (params.b != 0 && params.L == 0) {
 
@@ -405,10 +404,7 @@
 				let m = params.M + 0.001 * params.L * params.rho * t;
 				let bm = -params.b / m;
 				
-				if (current_graph !== 3) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + e_1 + ' e^{' + (-params.b) + 't / (' + params.M + ' + ' +(0.001 * params.L * params.rho) + 't)} + ' + K_6 + 't^2 + ' + K_5 + 't + ' + e_2 });
-					current_graph = 3;
-				}
+				graph = 'y(t) = ' + e_1 + ' e^{' + (-params.b) + 't / (' + params.M + ' + ' +(0.001 * params.L * params.rho) + 't)} + ' + K_6 + 't^2 + ' + K_5 + 't + ' + e_2;
 
 				position = e_1 * Math.exp(bm * t) + K_6 * Math.pow(t, 2) + K_5 * t + e_2;
 
@@ -421,10 +417,7 @@
 				let d_1 = params.dx_0 + 1000 * params.H * params.W * params.D * params.rho * lnM / params.L;
 				let d_2 = params.x_0 - 1e6 * HArhoL2g * params.M * (1 - lnM);
 
-				if (current_graph !== 4) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * params.g) + 't^2 + ' + (1e6 * HArhoL2g) + '(' + params.M +  ' + ' + (0.001*params.L*params.g) + 't) (1 - \\ln(' + params.M +  ' + ' + (0.001*params.L*params.g) + 't)) + ' + d_1 + 't + ' + d_2  });
-					current_graph = 4;
-				}
+				graph = 'y(t) = ' + (0.5 * params.g) + 't^2 + ' + (1e6 * HArhoL2g) + '(' + params.M +  ' + ' + (0.001*params.L*params.g) + 't) (1 - \\ln(' + params.M +  ' + ' + (0.001*params.L*params.g) + 't)) + ' + d_1 + 't + ' + d_2;
 
 				position = 0.5 * params.g * Math.pow(t, 2) + 1e6 * HArhoL2g * MLgt * (1 - lnMLgt) + d_1 * t + d_2;
 
@@ -432,16 +425,17 @@
 
 				let K = params.g - params.W * params.D * params.rho * params.g / params.M;
 
-				if (current_graph !== 5) {
-					calculator.setExpression({ id: 'graph1', latex: 'y(t) = ' + (0.5 * K) + 't^2 + ' + params.dx_0 + 't + ' + params.x_0  });
-					current_graph = 5;
-				}
+				graph = 'y(t) = ' + (0.5 * K) + 't^2 + ' + params.dx_0 + 't + ' + params.x_0;
 
 				position = 0.5 * K * Math.pow(t, 2) + params.dx_0 * t + params.x_0;
 
 			}
 
-			calculator.setExpression({id: 'graph2', 'latex': '(' + t + ', ' + position + ')'});
+			calculator.setExpression({id: 'point', 'latex': '(' + t + ', ' + position + ')'});
+			if (update_graph) {
+				calculator.setExpression({id: 'graph', 'latex': graph});
+				update_graph = false;
+			}
 			
 			return position;
 
@@ -462,16 +456,6 @@
 
 			} else if (x <= params.H) {
 				
-				//let K_2 = get('K_2', params);
-				//let Disc = get('Disc', params);
-				//let d_1 = get('d_1', params);
-				//let d_2 = get('d_2', params);
-				//let K_1 = get('K_1', params);
-				//let bM = -0.5 * params.b / params.M;
-				//let DiscM = 0.5 * Disc / params.M;
-
-				//return ( Math.exp(bM * t) * ( ( d_2 * Disc - d_1 * params.b ) * Math.cos(DiscM * t) - ( d_2 * params.b + d_1 * Disc ) * Math.sin(DiscM * t) ) ) / (2 * params.M) + K_1;
-
 				let m = params.M + 0.001 * params.L * params.rho * t;
 				let Arho = params.W * params.D * params.rho;
 				let Disc = Math.sqrt((4 * params.g * Arho - Math.pow(params.b, 2) / m ) / m) / 2;
@@ -499,11 +483,6 @@
 
 			} else if (params.L != 0) {
 
-				//let K_7 = get('K_7', params);
-				//let K_8 = get('K_8', params);
-
-				//return 3 * K_7 * Math.pow(t, 2) + 2 * K_8 * t + params.dx_0;
-
 				let HArhoL = params.H * params.W * params.D * params.rho / params.L;
 				let lnMLgt = Math.log(params.M + 0.001 * params.L * params.g * t);
 				let d_1 = params.dx_0 + 1000 * HArhoL * Math.log(params.M);
@@ -522,85 +501,45 @@
 
 		// ------------------------ Controls ----------------------------
 
-		var inputs = {
-			'W': document.getElementById('W'),
-			'D': document.getElementById('D'),
-			'H': document.getElementById('H'),
-			'rho': document.getElementById('rho'),
-			'g': document.getElementById('g'),
-			'M': document.getElementById('M'),
-			'x_0': document.getElementById('x_0'),
-			'dx_0': document.getElementById('dx_0'),
-			'L': document.getElementById('L'),
-			'b': document.getElementById('b')
-		};
-		
-		water_level_input = document.getElementById('water_level');
-		pixels_per_meter_input = document.getElementById('pixels_per_meter');
-		precision_input = document.getElementById('precision');
-		slowmotion_input = document.getElementById('slowmotion');
-
 		var pause_play_button = document.getElementById('pause_play_button');
 
-		future_params = Object.assign({}, init_params);
+		var future_params = Object.assign({}, init_params);
 	
 		setInterval(function() {
 			
-			Object.keys(inputs).forEach(function (key) {
-				inputs[key].placeholder = future_params[key];
+			Object.keys(init_params).forEach(function (key) {
+				document.getElementById(key).placeholder = future_params[key];
 			});
 
-			water_level_input.placeholder = water_level;
-			pixels_per_meter_input.placeholder = pixels_per_meter;
-			precision_input.placeholder = precision;
-			slowmotion_input.placeholder = slowmotion;
-
-		
 		}, 1000);
 
 		function update_simulation() {
-			Object.keys(inputs).forEach(function(key) {
-				new_value = parseFloat(inputs[key].value);
+			if (simulation !== null) {
+				clearInterval(simulation);
+				simulation = null;
+			}
+
+			Object.keys(init_params).forEach(function(key) {
+				input = document.getElementById(key);
+				new_value = parseFloat(input.value);
 
 				if (!isNaN(new_value)) {
 					future_params[key] = new_value;
 				}
 
-				inputs[key].value = '';
+				input.value = '';
 			});
 
-			if (!isNaN(parseFloat(water_level_input.value))) {
-				water_level = parseFloat(water_level_input.value);
-				water_level_input.value = '';
-			}
+			run_simulation();
 
-			if (!isNaN(parseFloat(pixels_per_meter_input.value))) {
-				pixels_per_meter = parseFloat(pixels_per_meter_input.value);
-				pixels_per_meter_input.value = '';
-			}
-	
-			if (!isNaN(parseFloat(precision_input.value))) {
-				precision = parseFloat(precision_input.value);
-				precision_input.value = '';
-			}
-
-			if (!isNaN(parseFloat(slowmotion_input.value))) {
-				slowmotion = parseFloat(slowmotion_input.value);
-				slowmotion_input.value = '';
-			}
-
-			if (simulation !== null) {
-				run_simulation();
-			}
-
-			//calculator.setExpression({id: 'graph1', latex: 'y=x^' + x_0});
+			update_graph = true;
 		}
 		
 		function pause_play_simulation() {
 			if (simulation !== null) {
 				clearInterval(simulation);
 				simulation = null;
-				current_graph = -1;
+				update_graph = true;
 
 				pause_play_button.classList.remove('is-warning');
 				pause_play_button.classList.add('is-info');
@@ -639,11 +578,11 @@
 		
 		function create() {
 			let sky = new Phaser.Geom.Rectangle(0, 0, 250, 900);
-			water = new Phaser.Geom.Rectangle(0, water_level, 250, 900 - water_level);
-			rect = new Phaser.Geom.Rectangle(125 - 0.5*init_params.W*pixels_per_meter,                      // x
-													 						 water_level + init_params.x_0*init_params.H*pixels_per_meter,  // y
-																			 init_params.W*pixels_per_meter, 															  // width
-													 						 init_params.H*pixels_per_meter);																// height
+			water = new Phaser.Geom.Rectangle(0, init_params.water_level, 250, 900 - init_params.water_level);
+			rect = new Phaser.Geom.Rectangle(125 - 0.5*init_params.W * init_params.pixels_per_meter,    																// x
+													 						 init_params.water_level + init_params.x_0 * init_params.H * init_params.pixels_per_meter,  // y
+																			 init_params.W * init_params.pixels_per_meter,								  														// width
+													 						 init_params.H * init_params.pixels_per_meter); 																						// height
 
 			let graphics_sky = this.add.graphics({fillStyle: {color: 0xe6f4f7}});
 			graphics_water = this.add.graphics({fillStyle: {color: 0xa4caed}});
@@ -655,7 +594,9 @@
 
 			run_simulation();
 		}
-	
+
+		x_0_input = document.getElementById('x_0');
+		dx_0_input = document.getElementById('dx_0');
 		function run_simulation() {
 			if (simulation !== null) {
 				clearInterval(simulation);
@@ -667,9 +608,9 @@
 			simulation = setInterval(function() {
 				graphics.clear();
 
-				t = iter/(slowmotion*precision);
+				t = iter / ( params.slowmotion * params.precision );
 				
-				current_x = (rect.y + rect.height - water_level)/pixels_per_meter;
+				current_x = (rect.y + rect.height - params.water_level) / params.pixels_per_meter;
 
 				new_x = get_position(current_x, t, params);
 
@@ -679,33 +620,34 @@
 					future_params.M = get_mass(t, params);
 				}
 
-				inputs['x_0'].placeholder = future_params.x_0;
-				inputs['dx_0'].placeholder = future_params.dx_0;
+				x_0_input.placeholder = future_params.x_0;
+				dx_0_input.placeholder = future_params.dx_0;
 
 				if ( (current_x < 0 && new_x > 0) || (current_x > 0 && new_x < 0) || 
 						 (current_x <= params.H && new_x > params.H) || (current_x > params.H && new_x < params.H)) {
 					params.dx_0 = future_params.dx_0;
 					params.x_0 = future_params.x_0;
 					params.M = future_params.M;
+					update_graph = true;
 					iter = 0;
 				}
 
-				rect.y = water_level + pixels_per_meter*new_x - rect.height;
+				rect.y = params.water_level + params.pixels_per_meter * new_x - rect.height;
 
-				if (params.W*pixels_per_meter != rect.width) {
-					rect.width = params.W * pixels_per_meter;
+				if (params.W * params.pixels_per_meter != rect.width) {
+					rect.width = params.W * params.pixels_per_meter;
 					rect.x = 125 - 0.5 * rect.width;
 				}
 				
-				if (params.H*pixels_per_meter != rect.height) {
-					height_diff = params.H * pixels_per_meter - rect.height;
-					rect.height = params.H * pixels_per_meter;
+				if (params.H * params.pixels_per_meter != rect.height) {
+					height_diff = params.H * params.pixels_per_meter - rect.height;
+					rect.height = params.H * params.pixels_per_meter;
 					rect.y = rect.y - height_diff;
 				}
 
-				if (water_level != water.y) {
-					water.y = water_level;
-					water.height = 900 - water_level;
+				if (params.water_level != water.y) {
+					water.y = params.water_level;
+					water.height = 900 - params.water_level;
 					graphics_water.clear();
 					graphics_water.fillRectShape(water);
 				}
@@ -714,13 +656,13 @@
 
 				iter += 1;
 
-			}, 1000/precision);
+			}, 1000/params.precision);
 
 		}
 
 // ---------------------------------- DESMOS -------------------------
 
-		var current_graph = -1;
+		var update_graph = true;
 
 		var elt = document.getElementById('calculator');
 		var calculator = Desmos.GraphingCalculator(elt);
