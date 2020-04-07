@@ -118,8 +118,8 @@
 											<div class="button is-success" onclick="update_simulation()">
 												Update Simulation
 											</div>
-											<div class="button is-warning" onclick="pause_play_simulation()" id="pause_play_button">
-												Pause Simulation
+											<div class="button is-success" onclick="pause_play_simulation()" id="pause_play_button">
+												Start Simulation
 											</div>
 										</div>
 									</div>
@@ -605,8 +605,6 @@
 			graphics_water.fillRectShape(water);
 
 			graphics = this.add.graphics({ fillStyle: { color: 0x777777} });
-
-			run_simulation();
 		}
 
 		x_0_input = document.getElementById('x_0');
