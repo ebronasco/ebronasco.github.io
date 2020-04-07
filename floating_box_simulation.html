@@ -593,7 +593,7 @@
 			let sky = new Phaser.Geom.Rectangle(0, 0, 250, 900);
 			water = new Phaser.Geom.Rectangle(0, init_params.water_level, 250, 900 - init_params.water_level);
 			rect = new Phaser.Geom.Rectangle(125 - 0.5*init_params.W * init_params.pixels_per_meter,    																// x
-													 						 init_params.water_level + init_params.x_0 - init_params.H * init_params.pixels_per_meter,  // y
+													 						 init_params.water_level + (init_params.x_0 - init_params.H) * init_params.pixels_per_meter,  // y
 																			 init_params.W * init_params.pixels_per_meter,								  														// width
 													 						 init_params.H * init_params.pixels_per_meter); 																						// height
 
